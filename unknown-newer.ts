@@ -17,3 +17,4 @@ function generateError(message: string, code: number): never {
 }
 
 generateError("An error occurred!", 500);
+

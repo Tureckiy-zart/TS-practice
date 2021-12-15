@@ -18,3 +18,4 @@ const num3: number = 22.3; // bad practice
 const printResult = true;
 add(num1, num2, printResult, "Result is: ");
 // add(+"5", 21.5, printResult);
+

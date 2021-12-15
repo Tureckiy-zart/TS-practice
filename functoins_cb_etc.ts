@@ -40,3 +40,4 @@ function addAndHandle(num1: number, num2: number, cb: (n: number) => void) {
 }
 
 addAndHandle(10, 20, log);
+

@@ -52,3 +52,4 @@ function greet(user: User) {
 greet({ name: "Jay" }); //=> not correct
 greet({ name: "Jay", age: 55 });
 greet(user2);
+

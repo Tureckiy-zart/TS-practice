@@ -26,3 +26,4 @@ console.log(person.name);
 for (const bobbie of person.hobbies) {
   console.log(`ihobbie:`, bobbie.slice(0, 2));
 }
+
