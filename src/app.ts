@@ -1,139 +1,67 @@
-type Admin = {
-  name: string;
-  privileges: string[];
-};
+// autobind decorator
 
-type Employee = {
-  name: string;
-  startDate: Date;
-};
-
-// interface ElevatedEmployee extends Employee, Admin {}
-
-type ElevatedEmployee = Admin & Employee;
-
-const e1: ElevatedEmployee = {
-  name: 'Max',
-  privileges: ['create-server'],
-  startDate: new Date()
-};
-
-type Combinable = string | number;
-type Numeric = number | boolean;
-
-type Universal = Combinable & Numeric;
-
-function add(a: number, b: number): number;
-function add(a: string, b: string): string;
-function add(a: string, b: number): string;
-function add(a: number, b: string): string;
-function add(a: Combinable, b: Combinable) {
-  if (typeof a === 'string' || typeof b === 'string') {
-    return a.toString() + b.toString();
-  }
-  return a + b;
+function autobind(_: string, _2: string, descriptor: PropertyDescriptor) {
+  const originalMethod = descriptor.value;
+  const adjustedDescriptor: PropertyDescriptor = {
+    configurable: true,
+    get() {
+      const boundFn = originalMethod.bind(this);
+      return boundFn;
+    },
+  };
+  return adjustedDescriptor;
 }
 
-const result = add('Max', ' Schwarz');
-result.split(' ');
+class ProjectInput {
+  templateElement: HTMLTemplateElement;
+  hostElement: HTMLDivElement;
+  formElement: HTMLFormElement;
+  titleInputElement: HTMLInputElement;
+  descriptionInputElement: HTMLInputElement;
+  peopleInputElement: HTMLInputElement;
 
-const fetchedUserData = {
-  id: 'u1',
-  name: 'Max',
-  job: { title: 'CEO', description: 'My own company' }
-};
+  constructor() {
+    this.templateElement = document.getElementById(
+      "project-input"
+    )! as HTMLTemplateElement;
+    this.hostElement = <HTMLDivElement>document.getElementById("app")!;
 
-console.log(fetchedUserData?.job?.title);
+    const importedNode = document.importNode(
+      this.templateElement.content,
+      true
+    );
 
-const userInput = undefined;
+    this.formElement = <HTMLFormElement>importedNode.firstElementChild;
+    this.formElement.id = "user-input";
+    this.titleInputElement = this.formElement.querySelector(
+      "#title"
+    ) as HTMLInputElement;
+    this.descriptionInputElement = this.formElement.querySelector(
+      "#description"
+    ) as HTMLInputElement;
+    this.peopleInputElement = this.formElement.querySelector(
+      "#people"
+    ) as HTMLInputElement;
 
-const storedData = userInput ?? 'DEFAULT';
+    this.configure();
+    this.attach();
+  }
 
-console.log(storedData);
+  @autobind
+  private submitHandler(e: Event): void {
+    e.preventDefault();
+    console.log(`this,titleInputElement`, this.titleInputElement);
+    console.log(`this,titleInputElement.value`, this.titleInputElement.value);
+  }
 
-// type UnknownEmployee = Employee | Admin;
+  private configure() {
+    this.formElement.addEventListener("submit", this.submitHandler);
+    // this.formElement.addEventListener("submit", this.submitHandler.bind(this));
+  }
+  private attach() {
+    this.hostElement.insertAdjacentElement("afterbegin", this.formElement);
+  }
+}
 
-// function printEmployeeInformation(emp: UnknownEmployee) {
-//   console.log('Name: ' + emp.name);
-//   if ('privileges' in emp) {
-//     console.log('Privileges: ' + emp.privileges);
-//   }
-//   if ('startDate' in emp) {
-//     console.log('Start Date: ' + emp.startDate);
-//   }
-// }
+const prjInput = new ProjectInput();
 
-// printEmployeeInformation({ name: 'Manu', startDate: new Date() });
-
-// class Car {
-//   drive() {
-//     console.log('Driving...');
-//   }
-// }
-
-// class Truck {
-//   drive() {
-//     console.log('Driving a truck...');
-//   }
-
-//   loadCargo(amount: number) {
-//     console.log('Loading cargo ...' + amount);
-//   }
-// }
-
-// type Vehicle = Car | Truck;
-
-// const v1 = new Car();
-// const v2 = new Truck();
-
-// function useVehicle(vehicle: Vehicle) {
-//   vehicle.drive();
-//   if (vehicle instanceof Truck) {
-//     vehicle.loadCargo(1000);
-//   }
-// }
-
-// useVehicle(v1);
-// useVehicle(v2);
-
-// interface Bird {
-//   type: 'bird';
-//   flyingSpeed: number;
-// }
-
-// interface Horse {
-//   type: 'horse';
-//   runningSpeed: number;
-// }
-
-// type Animal = Bird | Horse;
-
-// function moveAnimal(animal: Animal) {
-//   let speed;
-//   switch (animal.type) {
-//     case 'bird':
-//       speed = animal.flyingSpeed;
-//       break;
-//     case 'horse':
-//       speed = animal.runningSpeed;
-//   }
-//   console.log('Moving at speed: ' + speed);
-// }
-
-// moveAnimal({type: 'bird', flyingSpeed: 10});
-
-// // const userInputElement = <HTMLInputElement>document.getElementById('user-input')!;
-// const userInputElement = document.getElementById('user-input');
-
-// if (userInputElement) {
-//   (userInputElement as HTMLInputElement).value = 'Hi there!';
-// }
-
-// interface ErrorContainer { // { email: 'Not a valid email', username: 'Must start with a character!' }
-//   [prop: string]: string;
-// }
-
-// const errorBag: ErrorContainer = {
-//   email: 'Not a valid email!',
-//   username: 'Must start with a capital character!'
-// };
