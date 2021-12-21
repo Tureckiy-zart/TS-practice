@@ -1,155 +1,66 @@
-// // // const arr: any[] = ["Max", "Manu"];
-// // const arr: Array<string> = ["Max", "Manu"]; // string[] // string \ number[]
+// autobind decorator
 
-// // const promise_num: Promise<number> = new Promise((resolve) => {
-// //   setTimeout(() => {
-// //     resolve(10);
-// //   }, 100);
-// // });
-
-// // promise_num.then((data) => {
-// //   data.toString().length;
-// // });
-
-// // const promise_str: Promise<string> = new Promise((resolve) => {
-// //   setTimeout(() => {
-// //     resolve("I love Yasya");
-// //   }, 100);
-// // });
-
-// // promise_str
-// //   .then((data) => {
-// //     return data.split(" ");
-// //   })
-// //   .then((d) => console.log(d));
-
-// function merge(obj1: Object, obj2: Object) {
-//   return Object.assign(obj1, obj2);
-// }
-// console.log(`merge`, merge({ a: "a" }, { b: "b" })); // no problem if just console
-
-// //but problem if coz ts do not know is a exist
-// // const o = merge({ a: "a" }, { b: "b" }) as { a: string; b: string };
-// const o = merge({ a: "a" }, { b: "b" });
-// // o.a = "aa";
-
-// console.log(`o`, o);
-
-// //---------------------------------//
-// function mereGeneric<T, U>(obj1: T, obj2: U) {
-//   return Object.assign(obj1, obj2);
-// }
-// const generic = merge({ a: "a" }, { b: 1 });
-// console.log(`generic.a`, generic.a)
-
-//---------Decorators----------------------------//
-
-// function Logger(logString: string) {
-//   return function(constructor: Function) {
-//     console.log(logString);
-//     console.log(constructor);
-//   };
-// }
-
-// function WithTemplate(template: string, hookId: string) {
-//   return function (originalConstructor: any) {
-//     const hookEl = document.getElementById(hookId);
-//     const p = new originalConstructor();
-//     if (hookEl) {
-//       hookEl.innerHTML = template;
-//       hookEl.querySelector("h1")!.textContent = p.name;
-//     }
-//   };
-// }
-function WithTemplate(template: string, hookId: string) {
-  console.log("TEMPLATE FACTORY");
-  return function <T extends { new (...args: any[]): { name: string } }>(
-    originalConstructor: T
-  ) {
-    return class extends originalConstructor {
-      constructor(..._: any[]) {
-        super();
-        console.log("Rendering template");
-        const hookEl = document.getElementById(hookId);
-        if (hookEl) {
-          hookEl.innerHTML = template;
-          hookEl.querySelector("h1")!.textContent = this.name;
-        }
-      }
-    };
+function autobind(_: string, _2: string, descriptor: PropertyDescriptor) {
+  const originalMethod = descriptor.value;
+  const adjustedDescriptor: PropertyDescriptor = {
+    configurable: true,
+    get() {
+      const boundFn = originalMethod.bind(this);
+      return boundFn;
+    },
   };
+  return adjustedDescriptor;
 }
 
-// // @Logger('LOGGING - PERSON')
-@WithTemplate("<h1>My Person Object</h1>", "app")
-class Person {
-  name = "Max";
+class ProjectInput {
+  templateElement: HTMLTemplateElement;
+  hostElement: HTMLDivElement;
+  formElement: HTMLFormElement;
+  titleInputElement: HTMLInputElement;
+  descriptionInputElement: HTMLInputElement;
+  peopleInputElement: HTMLInputElement;
 
   constructor() {
-    console.log("Creating person object...");
+    this.templateElement = document.getElementById(
+      "project-input"
+    )! as HTMLTemplateElement;
+    this.hostElement = <HTMLDivElement>document.getElementById("app")!;
+
+    const importedNode = document.importNode(
+      this.templateElement.content,
+      true
+    );
+
+    this.formElement = <HTMLFormElement>importedNode.firstElementChild;
+    this.formElement.id = "user-input";
+    this.titleInputElement = this.formElement.querySelector(
+      "#title"
+    ) as HTMLInputElement;
+    this.descriptionInputElement = this.formElement.querySelector(
+      "#description"
+    ) as HTMLInputElement;
+    this.peopleInputElement = this.formElement.querySelector(
+      "#people"
+    ) as HTMLInputElement;
+
+    this.configure();
+    this.attach();
+  }
+
+  @autobind
+  private submitHandler(e: Event): void {
+    e.preventDefault();
+    console.log(`this,titleInputElement`, this.titleInputElement);
+    console.log(`this,titleInputElement.value`, this.titleInputElement.value);
+  }
+
+  private configure() {
+    this.formElement.addEventListener("submit", this.submitHandler);
+    // this.formElement.addEventListener("submit", this.submitHandler.bind(this));
+  }
+  private attach() {
+    this.hostElement.insertAdjacentElement("afterbegin", this.formElement);
   }
 }
 
-const pers = new Person();
-
-console.log(pers);
-
-//----------------------------------------------------------------
-
-function Log(target: any, propertyName: string | Symbol) {
-  console.log("Property decorator!");
-  console.log(target, propertyName);
-}
-
-function Log2(target: any, name: string, descriptor: PropertyDescriptor) {
-  console.log("Accessor decorator!");
-  console.log(target);
-  console.log(name);
-  console.log(descriptor);
-}
-
-function Log3(
-  target: any,
-  name: string | Symbol,
-  descriptor: PropertyDescriptor
-) {
-  console.log("Method decorator!");
-  console.log(target);
-  console.log(name);
-  console.log(descriptor);
-}
-
-function Log4(target: any, name: string | Symbol, position: number) {
-  console.log("Parameter decorator!");
-  console.log(target);
-  console.log(name);
-  console.log(position);
-}
-
-class Product {
-  @Log
-  title: string;
-  private _price: number;
-
-  @Log2
-  set price(val: number) {
-    if (val > 0) {
-      this._price = val;
-    } else {
-      throw new Error("Invalid price - should be positive!");
-    }
-  }
-
-  constructor(t: string, p: number) {
-    this.title = t;
-    this._price = p;
-  }
-
-  @Log3
-  getPriceWithTax(@Log4 tax: number) {
-    return this._price * (1 + tax);
-  }
-}
-
-const p1 = new Product("Book", 19);
-const p2 = new Product("Book 2", 29);
+const prjInput = new ProjectInput();
