@@ -20,5 +20,8 @@
   "homepage": "https://github.com/Turerckiy/TS-practice#readme",
   "devDependencies": {
     "lite-server": "^2.6.1"
+  },
+  "dependencies": {
+    "nano-id": "^1.1.0"
   }
 }
